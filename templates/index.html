@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Healthcare Portal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="logo">H</span>
+        <div>
+          <div class="brand-name">Healthcare Portal</div>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav"></nav>
+
+      <div class="sidebar-footer">
+        <div class="clinic-info">
+          <span class="clinic-dot"></span>
+          <div>
+            <div class="clinic-name">Beacon Hill Clinic</div>
+            <div class="clinic-hours">Open · Mon–Fri 8a–6p</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="search">
+          <input id="global-search" type="search" placeholder="Search patients by name or MRN…" />
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" id="notif-btn" title="Notifications"></button>
+        </div>
+      </header>
+
+      <main class="content" id="content">
+        <div class="loading">Loading…</div>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modal-backdrop" hidden>
+    <div class="modal" id="modal">
+      <header class="modal-header">
+        <h3 id="modal-title">Patient</h3>
+        <button class="icon-btn" id="modal-close" title="Close"></button>
+      </header>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
