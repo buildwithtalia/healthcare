@@ -1,4 +1,7 @@
-"""Shared helpers for CRUD blueprints."""
+"""Shared helpers for CRUD blueprints.
+
+Works with both plain dicts and MongoCollection proxies from data_store.
+"""
 from flask import Blueprint, jsonify, request, abort
 
 from services import ServiceError
@@ -16,7 +19,11 @@ def make_crud_blueprint(
     before_update=None,
     after_update=None,
 ):
-    """Build a Blueprint that exposes standard REST CRUD over a dict-based store.
+    """Build a Blueprint that exposes standard REST CRUD over a store.
+
+    The *store* may be a plain dict or a MongoCollection proxy — both
+    expose the same dict-like interface (.get, .values, __contains__,
+    __setitem__, __delitem__).
 
     Hooks:
       before_create(payload)  -> may mutate payload; raise ServiceError to reject
@@ -104,7 +111,9 @@ def make_crud_blueprint(
             except ServiceError as e:
                 body, code = e.to_response()
                 return jsonify(body), code
+        # Merge the update and persist back to the store
         record.update(payload)
+        store[record_id] = record
         if after_update:
             try:
                 after_update(record)
