@@ -1,18 +1,83 @@
-"""In-memory data store with seed data for the healthcare platform."""
+"""Data store with seed data for the healthcare platform.
+
+By default the platform keeps everything in memory (dicts) and reseeds on every
+process start. When ``DATABASE_URL`` is set (point it at your Neon serverless
+Postgres connection string), each store is transparently backed by a Neon table
+instead, so records survive restarts. See ``db.py`` for the persistence layer.
+
+The public surface (``patients``, ``providers``, ..., ``next_id``, ``seed``) is
+unchanged, so no blueprint code needs to know which backend is active.
+"""
 from datetime import datetime, timedelta
 from itertools import count
 from threading import Lock
 
+try:  # dotenv is optional; only needed to load DATABASE_URL from a .env file.
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:  # pragma: no cover
+    pass
+
+from db import make_engine, PersistentStore
+
 _ids = {}
 _locks = {}
+
+# Neon engine when DATABASE_URL is configured, otherwise None (in-memory mode).
+_engine = make_engine()
+PERSISTENT = _engine is not None
+
+# id counters persist across restarts by resuming from the id column of each
+# table; this table records the last id handed out per record kind.
+_COUNTER_TABLE = "id_counters"
+
+
+def _make_store(table: str):
+    """Return a Neon-backed store when persistence is on, else a plain dict."""
+    if PERSISTENT:
+        return PersistentStore(_engine, table)
+    return {}
+
+
+def _load_counter(kind: str, start: int) -> "count":
+    """Build an id generator for ``kind``, resuming from Neon when persistent."""
+    if not PERSISTENT:
+        return count(start)
+    from sqlalchemy import text
+    with _engine.begin() as conn:
+        conn.execute(text(
+            f'CREATE TABLE IF NOT EXISTS "{_COUNTER_TABLE}" '
+            "(kind TEXT PRIMARY KEY, last_id BIGINT NOT NULL)"
+        ))
+        row = conn.execute(
+            text(f'SELECT last_id FROM "{_COUNTER_TABLE}" WHERE kind = :k'),
+            {"k": kind},
+        ).first()
+    return count(row[0] + 1 if row else start)
+
+
+def _save_counter(kind: str, value: int) -> None:
+    if not PERSISTENT:
+        return
+    from sqlalchemy import text
+    with _engine.begin() as conn:
+        conn.execute(
+            text(
+                f'INSERT INTO "{_COUNTER_TABLE}" (kind, last_id) VALUES (:k, :v) '
+                "ON CONFLICT (kind) DO UPDATE SET last_id = EXCLUDED.last_id"
+            ),
+            {"k": kind, "v": value},
+        )
 
 
 def next_id(kind: str) -> int:
     if kind not in _ids:
-        _ids[kind] = count(1000)
+        _ids[kind] = _load_counter(kind, 1000)
         _locks[kind] = Lock()
     with _locks[kind]:
-        return next(_ids[kind])
+        rid = next(_ids[kind])
+    _save_counter(kind, rid)
+    return rid
 
 
 def iso(dt: datetime) -> str:
@@ -22,28 +87,36 @@ def iso(dt: datetime) -> str:
 NOW = datetime(2026, 7, 10, 9, 0, 0)
 
 
-patients = {}
-providers = {}
-appointments = {}
-ehr_records = {}
-lab_results = {}
-imaging_studies = {}
-prescriptions = {}
-insurance_policies = {}
-claims = {}
-invoices = {}
-payments = {}
-notifications = {}
-devices = {}
-device_readings = {}
-ai_agents = {}
+patients = _make_store("patients")
+providers = _make_store("providers")
+appointments = _make_store("appointments")
+ehr_records = _make_store("ehr_records")
+lab_results = _make_store("lab_results")
+imaging_studies = _make_store("imaging_studies")
+prescriptions = _make_store("prescriptions")
+insurance_policies = _make_store("insurance_policies")
+claims = _make_store("claims")
+invoices = _make_store("invoices")
+payments = _make_store("payments")
+notifications = _make_store("notifications")
+devices = _make_store("devices")
+device_readings = _make_store("device_readings")
+ai_agents = _make_store("ai_agents")
+
+_ALL_STORES = (
+    patients, providers, appointments, ehr_records, lab_results,
+    imaging_studies, prescriptions, insurance_policies, claims, invoices,
+    payments, notifications, devices, device_readings, ai_agents,
+)
 
 
 def _add(store, kind, record):
     rid = next_id(kind)
     record["id"] = rid
     store[rid] = record
-    return record
+    # In persistent mode the store wraps the dict; return the stored instance
+    # so callers operate on the write-through record.
+    return store.get(rid)
 
 
 def seed():
@@ -389,4 +462,20 @@ def seed():
     })
 
 
-seed()
+def _is_empty() -> bool:
+    return all(len(store) == 0 for store in _ALL_STORES)
+
+
+def init():
+    """Seed the store on first run.
+
+    In-memory mode reseeds every process start (unchanged behaviour). With Neon
+    persistence, seed only when the database is empty so existing data survives
+    restarts.
+    """
+    if PERSISTENT and not _is_empty():
+        return
+    seed()
+
+
+init()
