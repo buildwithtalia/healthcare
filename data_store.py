@@ -1,18 +1,43 @@
-"""In-memory data store with seed data for the healthcare platform."""
+"""MongoDB-backed data store for the healthcare platform.
+
+Each module-level name (patients, providers, …) is a MongoCollection
+proxy that supports the same dict-like read patterns used throughout
+the blueprints (.get, .values, .keys, iteration) as well as direct
+PyMongo operations.
+
+The seed() function is idempotent: it only inserts data when the
+database is empty, so restarting the server never duplicates records.
+"""
 from datetime import datetime, timedelta
-from itertools import count
 from threading import Lock
 
-_ids = {}
-_locks = {}
+from db import get_db
+
+
+# ---------------------------------------------------------------------------
+# Numeric ID counter (stored in MongoDB so it survives restarts)
+# ---------------------------------------------------------------------------
+
+_id_locks: dict[str, Lock] = {}
 
 
 def next_id(kind: str) -> int:
-    if kind not in _ids:
-        _ids[kind] = count(1000)
-        _locks[kind] = Lock()
-    with _locks[kind]:
-        return next(_ids[kind])
+    """Return the next auto-increment integer id for *kind*.
+
+    Uses a MongoDB 'counters' collection with findOneAndUpdate so the
+    sequence is safe under concurrent requests.
+    """
+    if kind not in _id_locks:
+        _id_locks[kind] = Lock()
+    with _id_locks[kind]:
+        db = get_db()
+        result = db.counters.find_one_and_update(
+            {"_id": kind},
+            {"$inc": {"seq": 1}},
+            upsert=True,
+            return_document=True,  # pymongo ReturnDocument.AFTER equivalent
+        )
+        return result["seq"]
 
 
 def iso(dt: datetime) -> str:
@@ -22,24 +47,94 @@ def iso(dt: datetime) -> str:
 NOW = datetime(2026, 7, 10, 9, 0, 0)
 
 
-patients = {}
-providers = {}
-appointments = {}
-ehr_records = {}
-lab_results = {}
-imaging_studies = {}
-prescriptions = {}
-insurance_policies = {}
-claims = {}
-invoices = {}
-payments = {}
-notifications = {}
-devices = {}
-device_readings = {}
-ai_agents = {}
+# ---------------------------------------------------------------------------
+# MongoCollection proxy
+# ---------------------------------------------------------------------------
+
+class MongoCollection:
+    """Thin wrapper around a pymongo Collection.
+
+    Provides the dict-like interface (get, values, keys, __contains__,
+    __len__, __iter__, __getitem__, __setitem__, __delitem__) that the
+    existing blueprints and api_helpers rely on, while delegating all
+    persistence to MongoDB.
+
+    Records are stored with a numeric 'id' field (not _id).  The
+    MongoDB _id is set equal to the numeric id for easy look-ups.
+    """
+
+    def __init__(self, collection_name: str):
+        self._name = collection_name
+
+    @property
+    def _col(self):
+        return get_db()[self._name]
+
+    # ------------------------------------------------------------------
+    # dict-like helpers
+    # ------------------------------------------------------------------
+
+    def get(self, key, default=None):
+        doc = self._col.find_one({"id": key}, {"_id": 0})
+        return doc if doc is not None else default
+
+    def values(self):
+        return list(self._col.find({}, {"_id": 0}))
+
+    def keys(self):
+        return [d["id"] for d in self._col.find({}, {"id": 1, "_id": 0})]
+
+    def items(self):
+        docs = self._col.find({}, {"_id": 0})
+        return [(d["id"], d) for d in docs]
+
+    def __contains__(self, key):
+        return self._col.count_documents({"id": key}, limit=1) > 0
+
+    def __len__(self):
+        return self._col.count_documents({})
+
+    def __iter__(self):
+        return iter(self.keys())
+
+    def __getitem__(self, key):
+        doc = self.get(key)
+        if doc is None:
+            raise KeyError(key)
+        return doc
+
+    def __setitem__(self, key, value):
+        value["id"] = key
+        self._col.replace_one({"id": key}, {**value, "_id": key}, upsert=True)
+
+    def __delitem__(self, key):
+        result = self._col.delete_one({"id": key})
+        if result.deleted_count == 0:
+            raise KeyError(key)
 
 
-def _add(store, kind, record):
+# ---------------------------------------------------------------------------
+# Module-level collection objects (same names as before)
+# ---------------------------------------------------------------------------
+
+patients          = MongoCollection("patients")
+providers         = MongoCollection("providers")
+appointments      = MongoCollection("appointments")
+ehr_records       = MongoCollection("ehr_records")
+lab_results       = MongoCollection("lab_results")
+imaging_studies   = MongoCollection("imaging_studies")
+prescriptions     = MongoCollection("prescriptions")
+insurance_policies = MongoCollection("insurance_policies")
+claims            = MongoCollection("claims")
+invoices          = MongoCollection("invoices")
+payments          = MongoCollection("payments")
+notifications     = MongoCollection("notifications")
+devices           = MongoCollection("devices")
+device_readings   = MongoCollection("device_readings")
+ai_agents         = MongoCollection("ai_agents")
+
+
+def _add(store: MongoCollection, kind: str, record: dict) -> dict:
     rid = next_id(kind)
     record["id"] = rid
     store[rid] = record
@@ -47,6 +142,10 @@ def _add(store, kind, record):
 
 
 def seed():
+    # Only seed when the database is empty to keep the function idempotent.
+    if len(patients) > 0:
+        return
+
     _add(patients, "patient", {
         "mrn": "MRN-001",
         "first_name": "Ava",
