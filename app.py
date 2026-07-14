@@ -7,7 +7,6 @@ from flask import Flask, jsonify, render_template
 from flask_cors import CORS
 
 import data_store as ds
-from db import get_db
 from blueprints.patients import bp as patients_bp
 from blueprints.providers import bp as providers_bp
 from blueprints.appointments import bp as appointments_bp
@@ -62,16 +61,8 @@ def create_app():
 
     @app.get("/api/health")
     def health():
-        # Verify MongoDB connectivity with a lightweight ping
-        try:
-            get_db().command("ping")
-            db_status = "ok"
-        except Exception as exc:
-            db_status = f"error: {exc}"
-
         return jsonify({
-            "status": "ok" if db_status == "ok" else "degraded",
-            "database": db_status,
+            "status": "ok",
             "counts": {
                 "patients": len(ds.patients),
                 "providers": len(ds.providers),
