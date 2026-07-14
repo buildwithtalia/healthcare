@@ -105,6 +105,7 @@ def make_crud_blueprint(
                 body, code = e.to_response()
                 return jsonify(body), code
         record.update(payload)
+        store[record_id] = record
         if after_update:
             try:
                 after_update(record)

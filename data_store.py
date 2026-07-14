@@ -1,18 +1,67 @@
-"""In-memory data store with seed data for the healthcare platform."""
+"""Postgres-backed data store.
+
+Each domain (patients, providers, etc.) is a `PGTable` proxy that exposes
+the same dict-like interface used across the blueprints (get, values,
+keys, __contains__, __setitem__, __delitem__). Records are stored as
+JSONB rows in per-domain tables, keyed by a numeric `id`.
+"""
 from datetime import datetime, timedelta
-from itertools import count
 from threading import Lock
 
-_ids = {}
-_locks = {}
+from psycopg import sql
+from psycopg.types.json import Json
+
+from db import pool
+
+
+TABLES = [
+    "patients", "providers", "appointments", "ehr_records", "lab_results",
+    "imaging_studies", "prescriptions", "insurance_policies", "claims",
+    "invoices", "payments", "notifications", "devices", "device_readings",
+    "ai_agents",
+]
+
+
+def _init_schema():
+    with pool.connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS id_counters (
+                    kind TEXT PRIMARY KEY,
+                    seq  BIGINT NOT NULL
+                )
+            """)
+            for t in TABLES:
+                cur.execute(sql.SQL("""
+                    CREATE TABLE IF NOT EXISTS {} (
+                        id   BIGINT PRIMARY KEY,
+                        data JSONB NOT NULL
+                    )
+                """).format(sql.Identifier(t)))
+
+
+_init_schema()
+
+
+_id_locks: dict[str, Lock] = {}
 
 
 def next_id(kind: str) -> int:
-    if kind not in _ids:
-        _ids[kind] = count(1000)
-        _locks[kind] = Lock()
-    with _locks[kind]:
-        return next(_ids[kind])
+    """Return the next auto-increment id for *kind*, atomic across concurrent requests."""
+    if kind not in _id_locks:
+        _id_locks[kind] = Lock()
+    with _id_locks[kind]:
+        with pool.connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO id_counters (kind, seq) VALUES (%s, 1000)
+                    ON CONFLICT (kind) DO UPDATE SET seq = id_counters.seq + 1
+                    RETURNING seq
+                    """,
+                    (kind,),
+                )
+                return cur.fetchone()["seq"]
 
 
 def iso(dt: datetime) -> str:
@@ -22,24 +71,103 @@ def iso(dt: datetime) -> str:
 NOW = datetime(2026, 7, 10, 9, 0, 0)
 
 
-patients = {}
-providers = {}
-appointments = {}
-ehr_records = {}
-lab_results = {}
-imaging_studies = {}
-prescriptions = {}
-insurance_policies = {}
-claims = {}
-invoices = {}
-payments = {}
-notifications = {}
-devices = {}
-device_readings = {}
-ai_agents = {}
+class PGTable:
+    """Dict-like proxy over a Postgres JSONB table."""
+
+    def __init__(self, name: str):
+        self._name = name
+        self._ident = sql.Identifier(name)
+
+    def get(self, key, default=None):
+        with pool.connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    sql.SQL("SELECT data FROM {} WHERE id = %s").format(self._ident),
+                    (key,),
+                )
+                row = cur.fetchone()
+                return row["data"] if row else default
+
+    def values(self):
+        with pool.connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql.SQL("SELECT data FROM {} ORDER BY id").format(self._ident))
+                return [r["data"] for r in cur.fetchall()]
+
+    def keys(self):
+        with pool.connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql.SQL("SELECT id FROM {} ORDER BY id").format(self._ident))
+                return [r["id"] for r in cur.fetchall()]
+
+    def items(self):
+        return [(r["id"], r) for r in self.values()]
+
+    def __contains__(self, key):
+        with pool.connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    sql.SQL("SELECT 1 FROM {} WHERE id = %s").format(self._ident),
+                    (key,),
+                )
+                return cur.fetchone() is not None
+
+    def __len__(self):
+        with pool.connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(sql.SQL("SELECT count(*) AS n FROM {}").format(self._ident))
+                return cur.fetchone()["n"]
+
+    def __iter__(self):
+        return iter(self.keys())
+
+    def __getitem__(self, key):
+        val = self.get(key)
+        if val is None:
+            raise KeyError(key)
+        return val
+
+    def __setitem__(self, key, value):
+        record = {**value, "id": key}
+        with pool.connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    sql.SQL("""
+                        INSERT INTO {} (id, data) VALUES (%s, %s)
+                        ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data
+                    """).format(self._ident),
+                    (key, Json(record)),
+                )
+
+    def __delitem__(self, key):
+        with pool.connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    sql.SQL("DELETE FROM {} WHERE id = %s").format(self._ident),
+                    (key,),
+                )
+                if cur.rowcount == 0:
+                    raise KeyError(key)
 
 
-def _add(store, kind, record):
+patients          = PGTable("patients")
+providers         = PGTable("providers")
+appointments      = PGTable("appointments")
+ehr_records       = PGTable("ehr_records")
+lab_results       = PGTable("lab_results")
+imaging_studies   = PGTable("imaging_studies")
+prescriptions     = PGTable("prescriptions")
+insurance_policies = PGTable("insurance_policies")
+claims            = PGTable("claims")
+invoices          = PGTable("invoices")
+payments          = PGTable("payments")
+notifications     = PGTable("notifications")
+devices           = PGTable("devices")
+device_readings   = PGTable("device_readings")
+ai_agents         = PGTable("ai_agents")
+
+
+def _add(store: PGTable, kind: str, record: dict) -> dict:
     rid = next_id(kind)
     record["id"] = rid
     store[rid] = record
@@ -47,6 +175,10 @@ def _add(store, kind, record):
 
 
 def seed():
+    # Idempotent: only seed if the patients table is empty.
+    if len(patients) > 0:
+        return
+
     _add(patients, "patient", {
         "mrn": "MRN-001",
         "first_name": "Ava",

@@ -19,5 +19,9 @@ env/
 .DS_Store
 Thumbs.db
 
+# Secrets
+.env
+.env.local
+
 # Local tooling
 .claude/

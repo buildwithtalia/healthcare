@@ -1,7 +1,18 @@
 # Healthcare Platform
 
 A Flask application demonstrating twelve core healthcare service APIs with a
-browsable dashboard, in-memory data store, and seed data.
+browsable dashboard, Postgres-backed data store (JSONB), and seed data.
+
+## Setup
+
+Create a `.env` file in the project root with your Neon Postgres connection
+string (or any Postgres URL):
+
+```
+DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
+```
+
+`.env` is gitignored — do not commit credentials.
 
 ## Run
 
@@ -10,7 +21,8 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Then open http://127.0.0.1:5000.
+The first run creates the required tables and seeds sample data (idempotent —
+subsequent starts do not re-seed). Then open http://127.0.0.1:5000.
 
 ## Services
 
@@ -74,4 +86,5 @@ curl -X POST http://127.0.0.1:5000/api/payments/pay \
   -d '{"invoice_id": 1013, "amount": 45.0, "method": "card"}'
 ```
 
-Data lives in-memory (see `data_store.py`) and reseeds every process start.
+Data lives in Postgres (see `data_store.py` — records are stored as JSONB in
+per-domain tables, exposed via a dict-like `PGTable` proxy).
