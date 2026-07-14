@@ -12,6 +12,28 @@ python app.py
 
 Then open http://127.0.0.1:5000.
 
+## Database (Neon)
+
+The platform runs fully in-memory by default and reseeds on every restart. To
+persist data, connect a [Neon](https://neon.tech) serverless Postgres database:
+
+1. Create a Neon project and copy its connection string.
+2. Copy `.env.example` to `.env` and set `DATABASE_URL` to that connection
+   string (Neon requires SSL — keep `?sslmode=require`).
+
+```bash
+cp .env.example .env
+# edit .env and paste your Neon DATABASE_URL
+python app.py
+```
+
+When `DATABASE_URL` is set, each service's store is transparently backed by a
+Neon table (`id` primary key + `JSONB` payload). The schema is created
+automatically on first run, seed data is inserted only when the database is
+empty, and id counters resume across restarts. Unset `DATABASE_URL` to fall
+back to the in-memory store. The persistence layer lives in `db.py`; the API
+code is unchanged.
+
 ## Services
 
 | API           | Base path             | Purpose                                    |
@@ -74,4 +96,6 @@ curl -X POST http://127.0.0.1:5000/api/payments/pay \
   -d '{"invoice_id": 1013, "amount": 45.0, "method": "card"}'
 ```
 
-Data lives in-memory (see `data_store.py`) and reseeds every process start.
+Data lives in-memory (see `data_store.py`) and reseeds every process start,
+unless a Neon database is configured via `DATABASE_URL` (see **Database
+(Neon)** above), in which case it persists across restarts.
