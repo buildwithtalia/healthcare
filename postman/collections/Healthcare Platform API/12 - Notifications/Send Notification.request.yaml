@@ -1,0 +1,17 @@
+$kind: http-request
+name: Send Notification
+method: POST
+url: '{{baseUrl}}/api/notifications/send'
+order: 7000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "channel": "email",
+      "subject": "Appointment reminder",
+      "message": "You have an appointment tomorrow at 10:00 AM."
+    }

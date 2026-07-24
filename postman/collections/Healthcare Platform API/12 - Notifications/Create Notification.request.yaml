@@ -1,0 +1,17 @@
+$kind: http-request
+name: Create Notification
+method: POST
+url: '{{baseUrl}}/api/notifications/'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "channel": "email",
+      "subject": "Test notification",
+      "message": "This is a test notification."
+    }

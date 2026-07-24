@@ -1,0 +1,22 @@
+$kind: http-request
+name: Create Lab Result
+method: POST
+url: '{{baseUrl}}/api/lab/'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "ordered_by": 1000,
+      "panel": "Basic Metabolic Panel",
+      "collected_at": "2026-07-10T08:00:00Z",
+      "results": [
+        {"analyte": "Sodium", "value": 138, "unit": "mEq/L", "flag": "N"},
+        {"analyte": "Potassium", "value": 4.1, "unit": "mEq/L", "flag": "N"}
+      ],
+      "status": "final"
+    }

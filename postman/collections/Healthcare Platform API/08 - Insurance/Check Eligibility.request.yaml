@@ -1,0 +1,5 @@
+$kind: http-request
+name: Check Eligibility
+method: GET
+url: '{{baseUrl}}/api/insurance/{{policyId}}/eligibility'
+order: 8000

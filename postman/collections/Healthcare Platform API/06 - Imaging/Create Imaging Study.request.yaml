@@ -1,0 +1,19 @@
+$kind: http-request
+name: Create Imaging Study
+method: POST
+url: '{{baseUrl}}/api/imaging/'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "ordered_by": 1000,
+      "modality": "CT",
+      "body_part": "Chest",
+      "study_date": "2026-07-10T14:00:00Z",
+      "status": "scheduled"
+    }

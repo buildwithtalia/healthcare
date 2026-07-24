@@ -1,0 +1,5 @@
+$kind: http-request
+name: Delete EHR Record
+method: DELETE
+url: '{{baseUrl}}/api/ehr/{{ehrId}}'
+order: 6000

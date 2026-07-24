@@ -1,0 +1,5 @@
+$kind: http-request
+name: Check In Appointment
+method: POST
+url: '{{baseUrl}}/api/appointments/{{appointmentId}}/check-in'
+order: 8000

@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Provider
+method: PUT
+url: '{{baseUrl}}/api/providers/{{providerId}}'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "first_name": "Sarah",
+      "last_name": "Kim",
+      "role": "physician",
+      "active": true
+    }

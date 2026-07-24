@@ -1,0 +1,54 @@
+name: Postman API Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Start Flask server
+        run: |
+          python app.py &
+          echo "Waiting for server to start..."
+          sleep 3
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+
+      - name: Install Postman CLI
+        run: curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+
+      - name: Log in to Postman CLI
+        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+
+      - name: Run Postman collection
+        run: |
+          postman collection run 48916573-5f44c18f-378a-435a-b557-a294358beb8f \
+            -e 48916573-d7daf483-7d7b-42e3-8b8b-a3b53c0968ae \
+            --env-var "baseUrl=http://127.0.0.1:5000" \
+            --reporters cli,junit \
+            --reporter-junit-export results/junit.xml \
+            --bail
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: postman-test-results
+          path: results/junit.xml

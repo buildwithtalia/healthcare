@@ -1,0 +1,5 @@
+$kind: http-request
+name: List Claims
+method: GET
+url: '{{baseUrl}}/api/claims/'
+order: 1000

@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Appointment
+method: PUT
+url: '{{baseUrl}}/api/appointments/{{appointmentId}}'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "provider_id": 1000,
+      "start_time": "2026-07-15T11:00:00Z",
+      "status": "scheduled"
+    }

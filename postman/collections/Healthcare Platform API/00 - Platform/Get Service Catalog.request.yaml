@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Service Catalog
+method: GET
+url: '{{baseUrl}}/api/catalog'
+order: 2000

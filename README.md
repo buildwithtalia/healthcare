@@ -6,10 +6,12 @@ browsable dashboard, Postgres-backed data store (JSONB), and seed data.
 ## Setup
 
 Create a `.env` file in the project root with your Neon Postgres connection
-string (or any Postgres URL):
+string (or any Postgres URL) and your Sentry DSN:
 
 ```
 DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
+SENTRY_DSN=https://<key>@<org>.ingest.sentry.io/<project>
+SENTRY_ENVIRONMENT=development
 ```
 
 `.env` is gitignored — do not commit credentials.
@@ -20,6 +22,23 @@ DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
 pip install -r requirements.txt
 python app.py
 ```
+
+If `SENTRY_DSN` is set the app reports errors and performance data to Sentry;
+if it's unset the app runs normally with no reporting.
+
+## Monitoring & alerts
+
+Errors and slow transactions are captured automatically via the Sentry Flask
+integration. To alert on API downtime:
+
+1. In Sentry, open **Alerts → Create Alert**.
+2. Choose **Issues** (any new/frequent error) or **Metric Alert** on
+   `failure_rate()` or `p95(transaction.duration)` for the healthcare project.
+3. Add a notification action (email, Slack, PagerDuty).
+
+For true uptime (heartbeat) checks, use **Insights → Crons** at
+https://postman-dn.sentry.io/monitors/ — have a scheduler ping the monitor
+check-in URL on an interval, and Sentry will alert if a check-in is missed.
 
 The first run creates the required tables and seeds sample data (idempotent —
 subsequent starts do not re-seed). Then open http://127.0.0.1:5000.

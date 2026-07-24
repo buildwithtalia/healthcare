@@ -1,0 +1,21 @@
+$kind: http-request
+name: Create Patient
+method: POST
+url: '{{baseUrl}}/api/patients/'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "first_name": "Jane",
+      "last_name": "Doe",
+      "dob": "1990-05-15",
+      "gender": "female",
+      "email": "jane.doe@example.com",
+      "phone": "+1-555-0199",
+      "blood_type": "A+",
+      "allergies": []
+    }

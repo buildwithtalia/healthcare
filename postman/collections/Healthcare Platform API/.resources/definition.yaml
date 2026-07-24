@@ -1,0 +1,34 @@
+$kind: collection
+name: Healthcare Platform API
+description: 'A comprehensive REST API for a healthcare platform covering patients, providers, appointments, EHR, lab, imaging, pharmacy, insurance, claims, billing, notifications, devices, and AI agents.'
+variables:
+  - key: baseUrl
+    value: 'http://127.0.0.1:5000'
+  - key: patientId
+    value: '1000'
+  - key: providerId
+    value: '1000'
+  - key: appointmentId
+    value: '1000'
+  - key: ehrId
+    value: '1000'
+  - key: labId
+    value: '1000'
+  - key: imagingId
+    value: '1000'
+  - key: rxId
+    value: '1000'
+  - key: policyId
+    value: '1000'
+  - key: claimId
+    value: '1000'
+  - key: invoiceId
+    value: '1000'
+  - key: paymentId
+    value: '1000'
+  - key: notificationId
+    value: '1000'
+  - key: deviceId
+    value: '1000'
+  - key: agentId
+    value: '1000'

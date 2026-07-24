@@ -1,0 +1,5 @@
+$kind: http-request
+name: Deploy AI Agent
+method: POST
+url: '{{baseUrl}}/api/ai-agents/{{agentId}}/deploy'
+order: 7000

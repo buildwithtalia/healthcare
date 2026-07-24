@@ -3,6 +3,24 @@
 Registers all API blueprints, exposes a browsable dashboard, and includes
 a machine-readable service catalog at /api/catalog.
 """
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+if os.getenv("SENTRY_DSN"):
+    import sentry_sdk
+    from sentry_sdk.integrations.flask import FlaskIntegration
+
+    sentry_sdk.init(
+        dsn=os.environ["SENTRY_DSN"],
+        environment=os.getenv("SENTRY_ENVIRONMENT", "development"),
+        integrations=[FlaskIntegration()],
+        traces_sample_rate=1.0,
+        send_default_pii=False,
+    )
+
 from flask import Flask, jsonify, render_template
 from flask_cors import CORS
 

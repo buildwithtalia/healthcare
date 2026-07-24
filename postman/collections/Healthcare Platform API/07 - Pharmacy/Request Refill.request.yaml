@@ -1,0 +1,14 @@
+$kind: http-request
+name: Request Refill
+method: POST
+url: '{{baseUrl}}/api/pharmacy/{{rxId}}/refill'
+order: 8000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "requested_by": "patient"
+    }

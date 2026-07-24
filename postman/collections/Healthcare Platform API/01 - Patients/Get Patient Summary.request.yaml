@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Patient Summary
+method: GET
+url: '{{baseUrl}}/api/patients/{{patientId}}/summary'
+order: 7000

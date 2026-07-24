@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get EHR Records by Patient
+method: GET
+url: '{{baseUrl}}/api/ehr/patient/{{patientId}}'
+order: 7000

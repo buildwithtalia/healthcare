@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Prescription
+method: PUT
+url: '{{baseUrl}}/api/pharmacy/{{rxId}}'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "drug": "Lisinopril",
+      "dose": "20 mg",
+      "status": "active"
+    }

@@ -1,0 +1,5 @@
+$kind: http-request
+name: List Imaging Studies
+method: GET
+url: '{{baseUrl}}/api/imaging/'
+order: 1000

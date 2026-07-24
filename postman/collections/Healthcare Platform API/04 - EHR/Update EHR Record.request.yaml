@@ -1,0 +1,16 @@
+$kind: http-request
+name: Update EHR Record
+method: PUT
+url: '{{baseUrl}}/api/ehr/{{ehrId}}'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "visit_date": "2026-07-10T09:00:00Z",
+      "notes": "Updated notes after review."
+    }

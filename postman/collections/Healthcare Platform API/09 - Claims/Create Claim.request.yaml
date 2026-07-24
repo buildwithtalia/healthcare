@@ -1,0 +1,19 @@
+$kind: http-request
+name: Create Claim
+method: POST
+url: '{{baseUrl}}/api/claims/'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "insurance_id": 1000,
+      "provider_id": 1000,
+      "service_date": "2026-07-10T09:00:00Z",
+      "cpt_codes": ["99213"],
+      "amount_billed": 250.0
+    }

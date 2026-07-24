@@ -1,0 +1,3892 @@
+openapi: 3.0.3
+info:
+  title: Healthcare Platform API
+  version: 1.0.0
+  description: A comprehensive healthcare platform API covering patients, providers, appointments, EHR, lab results, imaging, pharmacy, insurance, claims, invoices, payments, notifications, devices, and AI agents.
+
+servers:
+  - url: "{baseUrl}"
+    variables:
+      baseUrl:
+        default: "http://localhost:5000"
+
+tags:
+  - name: Platform
+    description: Core platform endpoints including health checks and service catalog
+  - name: Patients
+    description: Patient management and records
+  - name: Providers
+    description: Healthcare provider management and scheduling
+  - name: Appointments
+    description: Appointment scheduling and management
+  - name: EHR
+    description: Electronic Health Records management
+  - name: Lab
+    description: Laboratory results and orders
+  - name: Imaging
+    description: Medical imaging studies
+  - name: Pharmacy
+    description: Prescription and pharmacy management
+  - name: Insurance
+    description: Insurance policy management and eligibility
+  - name: Claims
+    description: Insurance claims processing and adjudication
+  - name: Invoices
+    description: Invoice management and billing
+  - name: Payments
+    description: Payment processing and records
+  - name: Notifications
+    description: Notification management and delivery
+  - name: Devices
+    description: Medical device registration and readings
+  - name: AI Agents
+    description: AI agent registration, deployment, and invocation
+
+paths:
+
+  # ─── Platform ───────────────────────────────────────────────────────────────
+
+  /api:
+    get:
+      tags: [Platform]
+      summary: Get API Root
+      description: Returns the root API information and available resource links.
+      operationId: getApiRoot
+      responses:
+        '200':
+          description: API root information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/catalog:
+    get:
+      tags: [Platform]
+      summary: Get Service Catalog
+      description: Returns the full catalog of available services and their endpoints.
+      operationId: getServiceCatalog
+      responses:
+        '200':
+          description: Service catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/health:
+    get:
+      tags: [Platform]
+      summary: Health Check
+      description: Returns the current health status of the API and its dependencies.
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─── Patients ────────────────────────────────────────────────────────────────
+
+  /api/patients/:
+    get:
+      tags: [Patients]
+      summary: List Patients
+      description: Retrieves a paginated list of all patients in the system.
+      operationId: listPatients
+      responses:
+        '200':
+          description: A list of patients
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientList'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Patients]
+      summary: Create Patient
+      description: Creates a new patient record in the system.
+      operationId: createPatient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientInput'
+      responses:
+        '201':
+          description: Patient created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/patients/search:
+    get:
+      tags: [Patients]
+      summary: Search Patients
+      description: Searches for patients by name, identifier, or other attributes.
+      operationId: searchPatients
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query string
+          schema:
+            type: string
+            example: ava
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/patients/{patientId}:
+    parameters:
+      - $ref: '#/components/parameters/patientId'
+    get:
+      tags: [Patients]
+      summary: Get Patient
+      description: Retrieves a single patient record by their unique identifier.
+      operationId: getPatient
+      responses:
+        '200':
+          description: Patient record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Patients]
+      summary: Update Patient
+      description: Replaces an existing patient record with the provided data.
+      operationId: updatePatient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientInput'
+      responses:
+        '200':
+          description: Patient updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [Patients]
+      summary: Patch Patient
+      description: Partially updates an existing patient record.
+      operationId: patchPatient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientPatch'
+      responses:
+        '200':
+          description: Patient patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Patients]
+      summary: Delete Patient
+      description: Deletes a patient record from the system.
+      operationId: deletePatient
+      responses:
+        '204':
+          description: Patient deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/patients/{patientId}/summary:
+    parameters:
+      - $ref: '#/components/parameters/patientId'
+    get:
+      tags: [Patients]
+      summary: Get Patient Summary
+      description: Retrieves a comprehensive summary of a patient including recent records, appointments, and vitals.
+      operationId: getPatientSummary
+      responses:
+        '200':
+          description: Patient summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─── Providers ───────────────────────────────────────────────────────────────
+
+  /api/providers/:
+    get:
+      tags: [Providers]
+      summary: List Providers
+      description: Retrieves a paginated list of all healthcare providers.
+      operationId: listProviders
+      responses:
+        '200':
+          description: A list of providers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderList'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Providers]
+      summary: Create Provider
+      description: Registers a new healthcare provider in the system.
+      operationId: createProvider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProviderInput'
+      responses:
+        '201':
+          description: Provider created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Provider'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/providers/{providerId}:
+    parameters:
+      - $ref: '#/components/parameters/providerId'
+    get:
+      tags: [Providers]
+      summary: Get Provider
+      description: Retrieves a single provider record by their unique identifier.
+      operationId: getProvider
+      responses:
+        '200':
+          description: Provider record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Provider'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Providers]
+      summary: Update Provider
+      description: Replaces an existing provider record with the provided data.
+      operationId: updateProvider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProviderInput'
+      responses:
+        '200':
+          description: Provider updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Provider'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [Providers]
+      summary: Patch Provider
+      description: Partially updates an existing provider record.
+      operationId: patchProvider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProviderPatch'
+      responses:
+        '200':
+          description: Provider patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Provider'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Providers]
+      summary: Delete Provider
+      description: Removes a provider record from the system.
+      operationId: deleteProvider
+      responses:
+        '204':
+          description: Provider deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/providers/{providerId}/schedule:
+    parameters:
+      - $ref: '#/components/parameters/providerId'
+    get:
+      tags: [Providers]
+      summary: Get Provider Schedule
+      description: Retrieves the availability schedule for a specific provider.
+      operationId: getProviderSchedule
+      responses:
+        '200':
+          description: Provider schedule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─── Appointments ─────────────────────────────────────────────────────────────
+
+  /api/appointments/:
+    get:
+      tags: [Appointments]
+      summary: List Appointments
+      description: Retrieves a paginated list of all appointments.
+      operationId: listAppointments
+      responses:
+        '200':
+          description: A list of appointments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentList'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Appointments]
+      summary: Create Appointment
+      description: Schedules a new appointment between a patient and provider.
+      operationId: createAppointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentInput'
+      responses:
+        '201':
+          description: Appointment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/appointments/{appointmentId}:
+    parameters:
+      - $ref: '#/components/parameters/appointmentId'
+    get:
+      tags: [Appointments]
+      summary: Get Appointment
+      description: Retrieves a single appointment by its unique identifier.
+      operationId: getAppointment
+      responses:
+        '200':
+          description: Appointment record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Appointments]
+      summary: Update Appointment
+      description: Replaces an existing appointment record with the provided data.
+      operationId: updateAppointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentInput'
+      responses:
+        '200':
+          description: Appointment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [Appointments]
+      summary: Patch Appointment
+      description: Partially updates an existing appointment record.
+      operationId: patchAppointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentPatch'
+      responses:
+        '200':
+          description: Appointment patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Appointments]
+      summary: Delete Appointment
+      description: Deletes an appointment record from the system.
+      operationId: deleteAppointment
+      responses:
+        '204':
+          description: Appointment deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/appointments/{appointmentId}/cancel:
+    parameters:
+      - $ref: '#/components/parameters/appointmentId'
+    post:
+      tags: [Appointments]
+      summary: Cancel Appointment
+      description: Cancels a scheduled appointment and notifies relevant parties.
+      operationId: cancelAppointment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Reason for cancellation
+      responses:
+        '200':
+          description: Appointment cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/appointments/{appointmentId}/check-in:
+    parameters:
+      - $ref: '#/components/parameters/appointmentId'
+    post:
+      tags: [Appointments]
+      summary: Check In Appointment
+      description: Records the patient check-in for a scheduled appointment.
+      operationId: checkInAppointment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                checkedInAt:
+                  type: string
+                  format: date-time
+                  description: Timestamp of check-in
+      responses:
+        '200':
+          description: Patient checked in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─── EHR ─────────────────────────────────────────────────────────────────────
+
+  /api/ehr/:
+    get:
+      tags: [EHR]
+      summary: List EHR Records
+      description: Retrieves a paginated list of all electronic health records.
+      operationId: listEhrRecords
+      responses:
+        '200':
+          description: A list of EHR records
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EhrList'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [EHR]
+      summary: Create EHR Record
+      description: Creates a new electronic health record for a patient.
+      operationId: createEhrRecord
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EhrInput'
+      responses:
+        '201':
+          description: EHR record created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ehr'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/ehr/{ehrId}:
+    parameters:
+      - $ref: '#/components/parameters/ehrId'
+    get:
+      tags: [EHR]
+      summary: Get EHR Record
+      description: Retrieves a single electronic health record by its unique identifier.
+      operationId: getEhrRecord
+      responses:
+        '200':
+          description: EHR record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ehr'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [EHR]
+      summary: Update EHR Record
+      description: Replaces an existing EHR record with the provided data.
+      operationId: updateEhrRecord
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EhrInput'
+      responses:
+        '200':
+          description: EHR record updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ehr'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [EHR]
+      summary: Patch EHR Record
+      description: Partially updates an existing EHR record.
+      operationId: patchEhrRecord
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EhrPatch'
+      responses:
+        '200':
+          description: EHR record patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ehr'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [EHR]
+      summary: Delete EHR Record
+      description: Deletes an electronic health record from the system.
+      operationId: deleteEhrRecord
+      responses:
+        '204':
+          description: EHR record deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/ehr/patient/{patientId}:
+    parameters:
+      - $ref: '#/components/parameters/patientId'
+    get:
+      tags: [EHR]
+      summary: Get EHR Records by Patient
+      description: Retrieves all electronic health records associated with a specific patient.
+      operationId: getEhrRecordsByPatient
+      responses:
+        '200':
+          description: EHR records for the patient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EhrList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─── Lab ─────────────────────────────────────────────────────────────────────
+
+  /api/lab/:
+    get:
+      tags: [Lab]
+      summary: List Lab Results
+      description: Retrieves a paginated list of all laboratory results.
+      operationId: listLabResults
+      responses:
+        '200':
+          description: A list of lab results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabList'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Lab]
+      summary: Create Lab Result
+      description: Creates a new laboratory result record.
+      operationId: createLabResult
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabInput'
+      responses:
+        '201':
+          description: Lab result created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lab'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/lab/abnormal:
+    get:
+      tags: [Lab]
+      summary: Get Abnormal Lab Results
+      description: Retrieves all laboratory results flagged as abnormal or out of range.
+      operationId: getAbnormalLabResults
+      responses:
+        '200':
+          description: Abnormal lab results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabList'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/lab/{labId}:
+    parameters:
+      - $ref: '#/components/parameters/labId'
+    get:
+      tags: [Lab]
+      summary: Get Lab Result
+      description: Retrieves a single laboratory result by its unique identifier.
+      operationId: getLabResult
+      responses:
+        '200':
+          description: Lab result record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lab'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Lab]
+      summary: Update Lab Result
+      description: Replaces an existing lab result record with the provided data.
+      operationId: updateLabResult
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabInput'
+      responses:
+        '200':
+          description: Lab result updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lab'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [Lab]
+      summary: Patch Lab Result
+      description: Partially updates an existing lab result record.
+      operationId: patchLabResult
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabPatch'
+      responses:
+        '200':
+          description: Lab result patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lab'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Lab]
+      summary: Delete Lab Result
+      description: Deletes a laboratory result record from the system.
+      operationId: deleteLabResult
+      responses:
+        '204':
+          description: Lab result deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/lab/patient/{patientId}:
+    parameters:
+      - $ref: '#/components/parameters/patientId'
+    get:
+      tags: [Lab]
+      summary: Get Lab Results by Patient
+      description: Retrieves all laboratory results associated with a specific patient.
+      operationId: getLabResultsByPatient
+      responses:
+        '200':
+          description: Lab results for the patient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─── Imaging ─────────────────────────────────────────────────────────────────
+
+  /api/imaging/:
+    get:
+      tags: [Imaging]
+      summary: List Imaging Studies
+      description: Retrieves a paginated list of all medical imaging studies.
+      operationId: listImagingStudies
+      responses:
+        '200':
+          description: A list of imaging studies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImagingList'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Imaging]
+      summary: Create Imaging Study
+      description: Creates a new medical imaging study record.
+      operationId: createImagingStudy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImagingInput'
+      responses:
+        '201':
+          description: Imaging study created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Imaging'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/imaging/{imagingId}:
+    parameters:
+      - $ref: '#/components/parameters/imagingId'
+    get:
+      tags: [Imaging]
+      summary: Get Imaging Study
+      description: Retrieves a single imaging study by its unique identifier.
+      operationId: getImagingStudy
+      responses:
+        '200':
+          description: Imaging study record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Imaging'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Imaging]
+      summary: Update Imaging Study
+      description: Replaces an existing imaging study record with the provided data.
+      operationId: updateImagingStudy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImagingInput'
+      responses:
+        '200':
+          description: Imaging study updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Imaging'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [Imaging]
+      summary: Patch Imaging Study
+      description: Partially updates an existing imaging study record.
+      operationId: patchImagingStudy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImagingPatch'
+      responses:
+        '200':
+          description: Imaging study patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Imaging'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Imaging]
+      summary: Delete Imaging Study
+      description: Deletes a medical imaging study record from the system.
+      operationId: deleteImagingStudy
+      responses:
+        '204':
+          description: Imaging study deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/imaging/patient/{patientId}:
+    parameters:
+      - $ref: '#/components/parameters/patientId'
+    get:
+      tags: [Imaging]
+      summary: Get Imaging Studies by Patient
+      description: Retrieves all imaging studies associated with a specific patient.
+      operationId: getImagingStudiesByPatient
+      responses:
+        '200':
+          description: Imaging studies for the patient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImagingList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─── Pharmacy ─────────────────────────────────────────────────────────────────
+
+  /api/pharmacy/:
+    get:
+      tags: [Pharmacy]
+      summary: List Prescriptions
+      description: Retrieves a paginated list of all prescriptions.
+      operationId: listPrescriptions
+      responses:
+        '200':
+          description: A list of prescriptions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PharmacyList'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Pharmacy]
+      summary: Create Prescription
+      description: Creates a new prescription record for a patient.
+      operationId: createPrescription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PharmacyInput'
+      responses:
+        '201':
+          description: Prescription created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pharmacy'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/pharmacy/{rxId}:
+    parameters:
+      - $ref: '#/components/parameters/rxId'
+    get:
+      tags: [Pharmacy]
+      summary: Get Prescription
+      description: Retrieves a single prescription by its unique identifier.
+      operationId: getPrescription
+      responses:
+        '200':
+          description: Prescription record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pharmacy'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Pharmacy]
+      summary: Update Prescription
+      description: Replaces an existing prescription record with the provided data.
+      operationId: updatePrescription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PharmacyInput'
+      responses:
+        '200':
+          description: Prescription updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pharmacy'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [Pharmacy]
+      summary: Patch Prescription
+      description: Partially updates an existing prescription record.
+      operationId: patchPrescription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PharmacyPatch'
+      responses:
+        '200':
+          description: Prescription patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pharmacy'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Pharmacy]
+      summary: Delete Prescription
+      description: Deletes a prescription record from the system.
+      operationId: deletePrescription
+      responses:
+        '204':
+          description: Prescription deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/pharmacy/patient/{patientId}:
+    parameters:
+      - $ref: '#/components/parameters/patientId'
+    get:
+      tags: [Pharmacy]
+      summary: Get Prescriptions by Patient
+      description: Retrieves all prescriptions associated with a specific patient.
+      operationId: getPrescriptionsByPatient
+      responses:
+        '200':
+          description: Prescriptions for the patient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PharmacyList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/pharmacy/{rxId}/refill:
+    parameters:
+      - $ref: '#/components/parameters/rxId'
+    post:
+      tags: [Pharmacy]
+      summary: Request Refill
+      description: Submits a refill request for an existing prescription.
+      operationId: requestRefill
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+                  description: Number of units to refill
+                notes:
+                  type: string
+                  description: Additional notes for the refill request
+      responses:
+        '200':
+          description: Refill request submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pharmacy'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─── Insurance ────────────────────────────────────────────────────────────────
+
+  /api/insurance/:
+    get:
+      tags: [Insurance]
+      summary: List Insurance Policies
+      description: Retrieves a paginated list of all insurance policies.
+      operationId: listInsurancePolicies
+      responses:
+        '200':
+          description: A list of insurance policies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsuranceList'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Insurance]
+      summary: Create Insurance Policy
+      description: Creates a new insurance policy record.
+      operationId: createInsurancePolicy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsuranceInput'
+      responses:
+        '201':
+          description: Insurance policy created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Insurance'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/insurance/{policyId}:
+    parameters:
+      - $ref: '#/components/parameters/policyId'
+    get:
+      tags: [Insurance]
+      summary: Get Insurance Policy
+      description: Retrieves a single insurance policy by its unique identifier.
+      operationId: getInsurancePolicy
+      responses:
+        '200':
+          description: Insurance policy record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Insurance'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Insurance]
+      summary: Update Insurance Policy
+      description: Replaces an existing insurance policy record with the provided data.
+      operationId: updateInsurancePolicy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsuranceInput'
+      responses:
+        '200':
+          description: Insurance policy updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Insurance'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [Insurance]
+      summary: Patch Insurance Policy
+      description: Partially updates an existing insurance policy record.
+      operationId: patchInsurancePolicy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsurancePatch'
+      responses:
+        '200':
+          description: Insurance policy patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Insurance'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Insurance]
+      summary: Delete Insurance Policy
+      description: Deletes an insurance policy record from the system.
+      operationId: deleteInsurancePolicy
+      responses:
+        '204':
+          description: Insurance policy deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/insurance/patient/{patientId}:
+    parameters:
+      - $ref: '#/components/parameters/patientId'
+    get:
+      tags: [Insurance]
+      summary: Get Policies by Patient
+      description: Retrieves all insurance policies associated with a specific patient.
+      operationId: getInsurancePoliciesByPatient
+      responses:
+        '200':
+          description: Insurance policies for the patient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsuranceList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/insurance/{policyId}/eligibility:
+    parameters:
+      - $ref: '#/components/parameters/policyId'
+    get:
+      tags: [Insurance]
+      summary: Check Eligibility
+      description: Checks the eligibility status of a specific insurance policy.
+      operationId: checkEligibility
+      responses:
+        '200':
+          description: Eligibility status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─── Claims ───────────────────────────────────────────────────────────────────
+
+  /api/claims/:
+    get:
+      tags: [Claims]
+      summary: List Claims
+      description: Retrieves a paginated list of all insurance claims.
+      operationId: listClaims
+      responses:
+        '200':
+          description: A list of claims
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimList'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Claims]
+      summary: Create Claim
+      description: Submits a new insurance claim for processing.
+      operationId: createClaim
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClaimInput'
+      responses:
+        '201':
+          description: Claim created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Claim'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/claims/{claimId}:
+    parameters:
+      - $ref: '#/components/parameters/claimId'
+    get:
+      tags: [Claims]
+      summary: Get Claim
+      description: Retrieves a single insurance claim by its unique identifier.
+      operationId: getClaim
+      responses:
+        '200':
+          description: Claim record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Claim'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Claims]
+      summary: Update Claim
+      description: Replaces an existing claim record with the provided data.
+      operationId: updateClaim
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClaimInput'
+      responses:
+        '200':
+          description: Claim updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Claim'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [Claims]
+      summary: Patch Claim
+      description: Partially updates an existing claim record.
+      operationId: patchClaim
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClaimPatch'
+      responses:
+        '200':
+          description: Claim patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Claim'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Claims]
+      summary: Delete Claim
+      description: Deletes a claim record from the system.
+      operationId: deleteClaim
+      responses:
+        '204':
+          description: Claim deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/claims/{claimId}/adjudicate:
+    parameters:
+      - $ref: '#/components/parameters/claimId'
+    post:
+      tags: [Claims]
+      summary: Adjudicate Claim
+      description: Processes and adjudicates an insurance claim, determining coverage and payment amounts.
+      operationId: adjudicateClaim
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                decision:
+                  type: string
+                  enum: [approved, denied, pending]
+                  description: Adjudication decision
+                approvedAmount:
+                  type: number
+                  format: float
+                  description: Approved payment amount
+                notes:
+                  type: string
+                  description: Adjudication notes
+      responses:
+        '200':
+          description: Claim adjudicated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Claim'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─── Invoices ─────────────────────────────────────────────────────────────────
+
+  /api/invoices/:
+    get:
+      tags: [Invoices]
+      summary: List Invoices
+      description: Retrieves a paginated list of all invoices.
+      operationId: listInvoices
+      responses:
+        '200':
+          description: A list of invoices
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceList'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Invoices]
+      summary: Create Invoice
+      description: Creates a new invoice for services rendered.
+      operationId: createInvoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceInput'
+      responses:
+        '201':
+          description: Invoice created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/invoices/{invoiceId}:
+    parameters:
+      - $ref: '#/components/parameters/invoiceId'
+    get:
+      tags: [Invoices]
+      summary: Get Invoice
+      description: Retrieves a single invoice by its unique identifier.
+      operationId: getInvoice
+      responses:
+        '200':
+          description: Invoice record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Invoices]
+      summary: Update Invoice
+      description: Replaces an existing invoice record with the provided data.
+      operationId: updateInvoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceInput'
+      responses:
+        '200':
+          description: Invoice updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [Invoices]
+      summary: Patch Invoice
+      description: Partially updates an existing invoice record.
+      operationId: patchInvoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoicePatch'
+      responses:
+        '200':
+          description: Invoice patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Invoices]
+      summary: Delete Invoice
+      description: Deletes an invoice record from the system.
+      operationId: deleteInvoice
+      responses:
+        '204':
+          description: Invoice deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/invoices/patient/{patientId}:
+    parameters:
+      - $ref: '#/components/parameters/patientId'
+    get:
+      tags: [Invoices]
+      summary: Get Invoices by Patient
+      description: Retrieves all invoices associated with a specific patient.
+      operationId: getInvoicesByPatient
+      responses:
+        '200':
+          description: Invoices for the patient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─── Payments ─────────────────────────────────────────────────────────────────
+
+  /api/payments/:
+    get:
+      tags: [Payments]
+      summary: List Payments
+      description: Retrieves a paginated list of all payment records.
+      operationId: listPayments
+      responses:
+        '200':
+          description: A list of payments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentList'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Payments]
+      summary: Create Payment
+      description: Creates a new payment record.
+      operationId: createPayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentInput'
+      responses:
+        '201':
+          description: Payment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/payments/pay:
+    post:
+      tags: [Payments]
+      summary: Pay Invoice
+      description: Processes a payment against a specific invoice.
+      operationId: payInvoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [invoiceId, amount, method]
+              properties:
+                invoiceId:
+                  type: string
+                  description: The invoice to pay
+                amount:
+                  type: number
+                  format: float
+                  description: Payment amount
+                method:
+                  type: string
+                  enum: [credit_card, debit_card, bank_transfer, cash, insurance]
+                  description: Payment method
+                notes:
+                  type: string
+                  description: Additional payment notes
+      responses:
+        '200':
+          description: Payment processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/payments/{paymentId}:
+    parameters:
+      - $ref: '#/components/parameters/paymentId'
+    get:
+      tags: [Payments]
+      summary: Get Payment
+      description: Retrieves a single payment record by its unique identifier.
+      operationId: getPayment
+      responses:
+        '200':
+          description: Payment record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Payments]
+      summary: Update Payment
+      description: Replaces an existing payment record with the provided data.
+      operationId: updatePayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentInput'
+      responses:
+        '200':
+          description: Payment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [Payments]
+      summary: Patch Payment
+      description: Partially updates an existing payment record.
+      operationId: patchPayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentPatch'
+      responses:
+        '200':
+          description: Payment patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Payments]
+      summary: Delete Payment
+      description: Deletes a payment record from the system.
+      operationId: deletePayment
+      responses:
+        '204':
+          description: Payment deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─── Notifications ────────────────────────────────────────────────────────────
+
+  /api/notifications/:
+    get:
+      tags: [Notifications]
+      summary: List Notifications
+      description: Retrieves a paginated list of all notifications.
+      operationId: listNotifications
+      responses:
+        '200':
+          description: A list of notifications
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationList'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Notifications]
+      summary: Create Notification
+      description: Creates a new notification record.
+      operationId: createNotification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationInput'
+      responses:
+        '201':
+          description: Notification created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/notifications/send:
+    post:
+      tags: [Notifications]
+      summary: Send Notification
+      description: Sends a notification to one or more recipients via the configured channels.
+      operationId: sendNotification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recipientId, message, channel]
+              properties:
+                recipientId:
+                  type: string
+                  description: ID of the notification recipient
+                message:
+                  type: string
+                  description: Notification message content
+                channel:
+                  type: string
+                  enum: [email, sms, push, in_app]
+                  description: Delivery channel
+                subject:
+                  type: string
+                  description: Notification subject (for email)
+                priority:
+                  type: string
+                  enum: [low, normal, high, urgent]
+                  default: normal
+      responses:
+        '200':
+          description: Notification sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/notifications/{notificationId}:
+    parameters:
+      - $ref: '#/components/parameters/notificationId'
+    get:
+      tags: [Notifications]
+      summary: Get Notification
+      description: Retrieves a single notification by its unique identifier.
+      operationId: getNotification
+      responses:
+        '200':
+          description: Notification record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Notifications]
+      summary: Update Notification
+      description: Replaces an existing notification record with the provided data.
+      operationId: updateNotification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationInput'
+      responses:
+        '200':
+          description: Notification updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [Notifications]
+      summary: Patch Notification
+      description: Partially updates an existing notification record.
+      operationId: patchNotification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationPatch'
+      responses:
+        '200':
+          description: Notification patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Notifications]
+      summary: Delete Notification
+      description: Deletes a notification record from the system.
+      operationId: deleteNotification
+      responses:
+        '204':
+          description: Notification deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─── Devices ──────────────────────────────────────────────────────────────────
+
+  /api/devices/:
+    get:
+      tags: [Devices]
+      summary: List Devices
+      description: Retrieves a paginated list of all registered medical devices.
+      operationId: listDevices
+      responses:
+        '200':
+          description: A list of devices
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceList'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Devices]
+      summary: Register Device
+      description: Registers a new medical device in the system.
+      operationId: registerDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceInput'
+      responses:
+        '201':
+          description: Device registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/devices/{deviceId}:
+    parameters:
+      - $ref: '#/components/parameters/deviceId'
+    get:
+      tags: [Devices]
+      summary: Get Device
+      description: Retrieves a single device record by its unique identifier.
+      operationId: getDevice
+      responses:
+        '200':
+          description: Device record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Devices]
+      summary: Update Device
+      description: Replaces an existing device record with the provided data.
+      operationId: updateDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceInput'
+      responses:
+        '200':
+          description: Device updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [Devices]
+      summary: Patch Device
+      description: Partially updates an existing device record.
+      operationId: patchDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DevicePatch'
+      responses:
+        '200':
+          description: Device patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Devices]
+      summary: Delete Device
+      description: Removes a device record from the system.
+      operationId: deleteDevice
+      responses:
+        '204':
+          description: Device deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/devices/{deviceId}/readings:
+    parameters:
+      - $ref: '#/components/parameters/deviceId'
+    get:
+      tags: [Devices]
+      summary: Get Device Readings
+      description: Retrieves all telemetry readings recorded by a specific device.
+      operationId: getDeviceReadings
+      responses:
+        '200':
+          description: Device readings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceReadingList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Devices]
+      summary: Ingest Device Reading
+      description: Ingests a new telemetry reading from a medical device.
+      operationId: ingestDeviceReading
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceReadingInput'
+      responses:
+        '201':
+          description: Device reading ingested successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceReading'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─── AI Agents ────────────────────────────────────────────────────────────────
+
+  /api/ai-agents/:
+    get:
+      tags: [AI Agents]
+      summary: List AI Agents
+      description: Retrieves a paginated list of all registered AI agents.
+      operationId: listAiAgents
+      responses:
+        '200':
+          description: A list of AI agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiAgentList'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [AI Agents]
+      summary: Register AI Agent
+      description: Registers a new AI agent in the platform.
+      operationId: registerAiAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiAgentInput'
+      responses:
+        '201':
+          description: AI agent registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiAgent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/ai-agents/{agentId}:
+    parameters:
+      - $ref: '#/components/parameters/agentId'
+    get:
+      tags: [AI Agents]
+      summary: Get AI Agent
+      description: Retrieves a single AI agent record by its unique identifier.
+      operationId: getAiAgent
+      responses:
+        '200':
+          description: AI agent record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiAgent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [AI Agents]
+      summary: Update AI Agent
+      description: Replaces an existing AI agent record with the provided data.
+      operationId: updateAiAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiAgentInput'
+      responses:
+        '200':
+          description: AI agent updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiAgent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [AI Agents]
+      summary: Patch AI Agent
+      description: Partially updates an existing AI agent record.
+      operationId: patchAiAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiAgentPatch'
+      responses:
+        '200':
+          description: AI agent patched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiAgent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [AI Agents]
+      summary: Delete AI Agent
+      description: Removes an AI agent record from the platform.
+      operationId: deleteAiAgent
+      responses:
+        '204':
+          description: AI agent deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/ai-agents/{agentId}/invoke:
+    parameters:
+      - $ref: '#/components/parameters/agentId'
+    post:
+      tags: [AI Agents]
+      summary: Invoke AI Agent
+      description: Invokes an AI agent with the provided input payload and returns the agent's response.
+      operationId: invokeAiAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [input]
+              properties:
+                input:
+                  type: object
+                  description: Input data for the AI agent
+                  additionalProperties: true
+                context:
+                  type: object
+                  description: Optional contextual data for the invocation
+                  additionalProperties: true
+                sessionId:
+                  type: string
+                  description: Optional session identifier for stateful agents
+      responses:
+        '200':
+          description: AI agent invocation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agentId:
+                    type: string
+                  output:
+                    type: object
+                    additionalProperties: true
+                  sessionId:
+                    type: string
+                  executionTime:
+                    type: number
+                    description: Execution time in milliseconds
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/ai-agents/{agentId}/deploy:
+    parameters:
+      - $ref: '#/components/parameters/agentId'
+    post:
+      tags: [AI Agents]
+      summary: Deploy AI Agent
+      description: Deploys an AI agent to the production environment, making it available for invocation.
+      operationId: deployAiAgent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                environment:
+                  type: string
+                  enum: [staging, production]
+                  default: production
+                  description: Target deployment environment
+                version:
+                  type: string
+                  description: Version tag for this deployment
+      responses:
+        '200':
+          description: AI agent deployed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiAgent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/ai-agents/{agentId}/retire:
+    parameters:
+      - $ref: '#/components/parameters/agentId'
+    post:
+      tags: [AI Agents]
+      summary: Retire AI Agent
+      description: Retires an AI agent, removing it from active service while preserving its record.
+      operationId: retireAiAgent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Reason for retiring the agent
+      responses:
+        '200':
+          description: AI agent retired successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiAgent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+# ─── Components ───────────────────────────────────────────────────────────────
+
+components:
+
+  parameters:
+    patientId:
+      name: patientId
+      in: path
+      required: true
+      description: Unique identifier of the patient
+      schema:
+        type: string
+    providerId:
+      name: providerId
+      in: path
+      required: true
+      description: Unique identifier of the provider
+      schema:
+        type: string
+    appointmentId:
+      name: appointmentId
+      in: path
+      required: true
+      description: Unique identifier of the appointment
+      schema:
+        type: string
+    ehrId:
+      name: ehrId
+      in: path
+      required: true
+      description: Unique identifier of the EHR record
+      schema:
+        type: string
+    labId:
+      name: labId
+      in: path
+      required: true
+      description: Unique identifier of the lab result
+      schema:
+        type: string
+    imagingId:
+      name: imagingId
+      in: path
+      required: true
+      description: Unique identifier of the imaging study
+      schema:
+        type: string
+    rxId:
+      name: rxId
+      in: path
+      required: true
+      description: Unique identifier of the prescription
+      schema:
+        type: string
+    policyId:
+      name: policyId
+      in: path
+      required: true
+      description: Unique identifier of the insurance policy
+      schema:
+        type: string
+    claimId:
+      name: claimId
+      in: path
+      required: true
+      description: Unique identifier of the claim
+      schema:
+        type: string
+    invoiceId:
+      name: invoiceId
+      in: path
+      required: true
+      description: Unique identifier of the invoice
+      schema:
+        type: string
+    paymentId:
+      name: paymentId
+      in: path
+      required: true
+      description: Unique identifier of the payment
+      schema:
+        type: string
+    notificationId:
+      name: notificationId
+      in: path
+      required: true
+      description: Unique identifier of the notification
+      schema:
+        type: string
+    deviceId:
+      name: deviceId
+      in: path
+      required: true
+      description: Unique identifier of the device
+      schema:
+        type: string
+    agentId:
+      name: agentId
+      in: path
+      required: true
+      description: Unique identifier of the AI agent
+      schema:
+        type: string
+
+  responses:
+    BadRequest:
+      description: Bad request – invalid or missing parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+
+    # ── Shared ──────────────────────────────────────────────────────────────────
+
+    GenericResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error type or code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          additionalProperties: true
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: healthy
+        version:
+          type: string
+        uptime:
+          type: number
+        timestamp:
+          type: string
+          format: date-time
+
+    # ── Patient ─────────────────────────────────────────────────────────────────
+
+    Patient:
+      type: object
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [male, female, other, unknown]
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        address:
+          $ref: '#/components/schemas/Address'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    PatientInput:
+      type: object
+      required: [firstName, lastName, dateOfBirth]
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [male, female, other, unknown]
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        address:
+          $ref: '#/components/schemas/Address'
+
+    PatientPatch:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        gender:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        address:
+          $ref: '#/components/schemas/Address'
+
+    PatientList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Patient'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    # ── Provider ────────────────────────────────────────────────────────────────
+
+    Provider:
+      type: object
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        specialty:
+          type: string
+        npi:
+          type: string
+          description: National Provider Identifier
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        department:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ProviderInput:
+      type: object
+      required: [firstName, lastName, specialty]
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        specialty:
+          type: string
+        npi:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        department:
+          type: string
+
+    ProviderPatch:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        specialty:
+          type: string
+        npi:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        department:
+          type: string
+
+    ProviderList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Provider'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    # ── Appointment ─────────────────────────────────────────────────────────────
+
+    Appointment:
+      type: object
+      properties:
+        id:
+          type: string
+        patientId:
+          type: string
+        providerId:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          description: Duration in minutes
+        type:
+          type: string
+          enum: [in_person, telehealth, phone]
+        status:
+          type: string
+          enum: [scheduled, confirmed, checked_in, completed, cancelled, no_show]
+        reason:
+          type: string
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AppointmentInput:
+      type: object
+      required: [patientId, providerId, scheduledAt]
+      properties:
+        patientId:
+          type: string
+        providerId:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          default: 30
+        type:
+          type: string
+          enum: [in_person, telehealth, phone]
+          default: in_person
+        reason:
+          type: string
+        notes:
+          type: string
+
+    AppointmentPatch:
+      type: object
+      properties:
+        scheduledAt:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+        type:
+          type: string
+        status:
+          type: string
+        reason:
+          type: string
+        notes:
+          type: string
+
+    AppointmentList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Appointment'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    # ── EHR ─────────────────────────────────────────────────────────────────────
+
+    Ehr:
+      type: object
+      properties:
+        id:
+          type: string
+        patientId:
+          type: string
+        providerId:
+          type: string
+        visitDate:
+          type: string
+          format: date-time
+        chiefComplaint:
+          type: string
+        diagnosis:
+          type: array
+          items:
+            type: string
+        medications:
+          type: array
+          items:
+            type: string
+        allergies:
+          type: array
+          items:
+            type: string
+        vitals:
+          $ref: '#/components/schemas/Vitals'
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    EhrInput:
+      type: object
+      required: [patientId, visitDate]
+      properties:
+        patientId:
+          type: string
+        providerId:
+          type: string
+        visitDate:
+          type: string
+          format: date-time
+        chiefComplaint:
+          type: string
+        diagnosis:
+          type: array
+          items:
+            type: string
+        medications:
+          type: array
+          items:
+            type: string
+        allergies:
+          type: array
+          items:
+            type: string
+        vitals:
+          $ref: '#/components/schemas/Vitals'
+        notes:
+          type: string
+
+    EhrPatch:
+      type: object
+      properties:
+        chiefComplaint:
+          type: string
+        diagnosis:
+          type: array
+          items:
+            type: string
+        medications:
+          type: array
+          items:
+            type: string
+        allergies:
+          type: array
+          items:
+            type: string
+        vitals:
+          $ref: '#/components/schemas/Vitals'
+        notes:
+          type: string
+
+    EhrList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ehr'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    # ── Lab ─────────────────────────────────────────────────────────────────────
+
+    Lab:
+      type: object
+      properties:
+        id:
+          type: string
+        patientId:
+          type: string
+        providerId:
+          type: string
+        testName:
+          type: string
+        testCode:
+          type: string
+        result:
+          type: string
+        unit:
+          type: string
+        referenceRange:
+          type: string
+        status:
+          type: string
+          enum: [pending, resulted, abnormal, critical]
+        collectedAt:
+          type: string
+          format: date-time
+        resultedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    LabInput:
+      type: object
+      required: [patientId, testName]
+      properties:
+        patientId:
+          type: string
+        providerId:
+          type: string
+        testName:
+          type: string
+        testCode:
+          type: string
+        result:
+          type: string
+        unit:
+          type: string
+        referenceRange:
+          type: string
+        status:
+          type: string
+          enum: [pending, resulted, abnormal, critical]
+        collectedAt:
+          type: string
+          format: date-time
+
+    LabPatch:
+      type: object
+      properties:
+        result:
+          type: string
+        unit:
+          type: string
+        referenceRange:
+          type: string
+        status:
+          type: string
+        resultedAt:
+          type: string
+          format: date-time
+
+    LabList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Lab'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    # ── Imaging ─────────────────────────────────────────────────────────────────
+
+    Imaging:
+      type: object
+      properties:
+        id:
+          type: string
+        patientId:
+          type: string
+        providerId:
+          type: string
+        modality:
+          type: string
+          enum: [X-Ray, CT, MRI, Ultrasound, PET, Mammography, Fluoroscopy]
+        bodyPart:
+          type: string
+        indication:
+          type: string
+        findings:
+          type: string
+        impression:
+          type: string
+        status:
+          type: string
+          enum: [ordered, scheduled, in_progress, completed, cancelled]
+        studyDate:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ImagingInput:
+      type: object
+      required: [patientId, modality, bodyPart]
+      properties:
+        patientId:
+          type: string
+        providerId:
+          type: string
+        modality:
+          type: string
+          enum: [X-Ray, CT, MRI, Ultrasound, PET, Mammography, Fluoroscopy]
+        bodyPart:
+          type: string
+        indication:
+          type: string
+        studyDate:
+          type: string
+          format: date-time
+
+    ImagingPatch:
+      type: object
+      properties:
+        findings:
+          type: string
+        impression:
+          type: string
+        status:
+          type: string
+        studyDate:
+          type: string
+          format: date-time
+
+    ImagingList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Imaging'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    # ── Pharmacy ────────────────────────────────────────────────────────────────
+
+    Pharmacy:
+      type: object
+      properties:
+        id:
+          type: string
+        patientId:
+          type: string
+        providerId:
+          type: string
+        medicationName:
+          type: string
+        dosage:
+          type: string
+        frequency:
+          type: string
+        quantity:
+          type: integer
+        refillsRemaining:
+          type: integer
+        status:
+          type: string
+          enum: [active, expired, cancelled, on_hold]
+        prescribedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    PharmacyInput:
+      type: object
+      required: [patientId, medicationName, dosage]
+      properties:
+        patientId:
+          type: string
+        providerId:
+          type: string
+        medicationName:
+          type: string
+        dosage:
+          type: string
+        frequency:
+          type: string
+        quantity:
+          type: integer
+        refillsRemaining:
+          type: integer
+        prescribedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date
+
+    PharmacyPatch:
+      type: object
+      properties:
+        dosage:
+          type: string
+        frequency:
+          type: string
+        quantity:
+          type: integer
+        refillsRemaining:
+          type: integer
+        status:
+          type: string
+        expiresAt:
+          type: string
+          format: date
+
+    PharmacyList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pharmacy'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    # ── Insurance ───────────────────────────────────────────────────────────────
+
+    Insurance:
+      type: object
+      properties:
+        id:
+          type: string
+        patientId:
+          type: string
+        insurerName:
+          type: string
+        policyNumber:
+          type: string
+        groupNumber:
+          type: string
+        planType:
+          type: string
+          enum: [HMO, PPO, EPO, POS, HDHP]
+        coverageStartDate:
+          type: string
+          format: date
+        coverageEndDate:
+          type: string
+          format: date
+        copay:
+          type: number
+          format: float
+        deductible:
+          type: number
+          format: float
+        status:
+          type: string
+          enum: [active, inactive, expired, pending]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    InsuranceInput:
+      type: object
+      required: [patientId, insurerName, policyNumber]
+      properties:
+        patientId:
+          type: string
+        insurerName:
+          type: string
+        policyNumber:
+          type: string
+        groupNumber:
+          type: string
+        planType:
+          type: string
+          enum: [HMO, PPO, EPO, POS, HDHP]
+        coverageStartDate:
+          type: string
+          format: date
+        coverageEndDate:
+          type: string
+          format: date
+        copay:
+          type: number
+          format: float
+        deductible:
+          type: number
+          format: float
+
+    InsurancePatch:
+      type: object
+      properties:
+        insurerName:
+          type: string
+        policyNumber:
+          type: string
+        groupNumber:
+          type: string
+        planType:
+          type: string
+        coverageStartDate:
+          type: string
+          format: date
+        coverageEndDate:
+          type: string
+          format: date
+        copay:
+          type: number
+        deductible:
+          type: number
+        status:
+          type: string
+
+    InsuranceList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Insurance'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    # ── Claim ───────────────────────────────────────────────────────────────────
+
+    Claim:
+      type: object
+      properties:
+        id:
+          type: string
+        patientId:
+          type: string
+        providerId:
+          type: string
+        policyId:
+          type: string
+        serviceDate:
+          type: string
+          format: date
+        diagnosisCodes:
+          type: array
+          items:
+            type: string
+        procedureCodes:
+          type: array
+          items:
+            type: string
+        billedAmount:
+          type: number
+          format: float
+        approvedAmount:
+          type: number
+          format: float
+        status:
+          type: string
+          enum: [submitted, pending, approved, denied, appealed, paid]
+        submittedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ClaimInput:
+      type: object
+      required: [patientId, policyId, serviceDate, billedAmount]
+      properties:
+        patientId:
+          type: string
+        providerId:
+          type: string
+        policyId:
+          type: string
+        serviceDate:
+          type: string
+          format: date
+        diagnosisCodes:
+          type: array
+          items:
+            type: string
+        procedureCodes:
+          type: array
+          items:
+            type: string
+        billedAmount:
+          type: number
+          format: float
+
+    ClaimPatch:
+      type: object
+      properties:
+        diagnosisCodes:
+          type: array
+          items:
+            type: string
+        procedureCodes:
+          type: array
+          items:
+            type: string
+        billedAmount:
+          type: number
+        status:
+          type: string
+
+    ClaimList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Claim'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    # ── Invoice ─────────────────────────────────────────────────────────────────
+
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: string
+        patientId:
+          type: string
+        claimId:
+          type: string
+        lineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceLineItem'
+        subtotal:
+          type: number
+          format: float
+        tax:
+          type: number
+          format: float
+        total:
+          type: number
+          format: float
+        amountPaid:
+          type: number
+          format: float
+        balance:
+          type: number
+          format: float
+        status:
+          type: string
+          enum: [draft, issued, partially_paid, paid, overdue, cancelled]
+        dueDate:
+          type: string
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    InvoiceInput:
+      type: object
+      required: [patientId, lineItems]
+      properties:
+        patientId:
+          type: string
+        claimId:
+          type: string
+        lineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceLineItem'
+        dueDate:
+          type: string
+          format: date
+
+    InvoicePatch:
+      type: object
+      properties:
+        lineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceLineItem'
+        dueDate:
+          type: string
+          format: date
+        status:
+          type: string
+
+    InvoiceLineItem:
+      type: object
+      properties:
+        description:
+          type: string
+        quantity:
+          type: integer
+        unitPrice:
+          type: number
+          format: float
+        total:
+          type: number
+          format: float
+
+    InvoiceList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Invoice'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    # ── Payment ─────────────────────────────────────────────────────────────────
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+        invoiceId:
+          type: string
+        patientId:
+          type: string
+        amount:
+          type: number
+          format: float
+        method:
+          type: string
+          enum: [credit_card, debit_card, bank_transfer, cash, insurance]
+        status:
+          type: string
+          enum: [pending, completed, failed, refunded]
+        transactionId:
+          type: string
+        paidAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    PaymentInput:
+      type: object
+      required: [invoiceId, amount, method]
+      properties:
+        invoiceId:
+          type: string
+        patientId:
+          type: string
+        amount:
+          type: number
+          format: float
+        method:
+          type: string
+          enum: [credit_card, debit_card, bank_transfer, cash, insurance]
+        notes:
+          type: string
+
+    PaymentPatch:
+      type: object
+      properties:
+        amount:
+          type: number
+        method:
+          type: string
+        status:
+          type: string
+        notes:
+          type: string
+
+    PaymentList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    # ── Notification ────────────────────────────────────────────────────────────
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+        recipientId:
+          type: string
+        recipientType:
+          type: string
+          enum: [patient, provider, admin]
+        message:
+          type: string
+        subject:
+          type: string
+        channel:
+          type: string
+          enum: [email, sms, push, in_app]
+        priority:
+          type: string
+          enum: [low, normal, high, urgent]
+        status:
+          type: string
+          enum: [pending, sent, delivered, failed, read]
+        sentAt:
+          type: string
+          format: date-time
+        readAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    NotificationInput:
+      type: object
+      required: [recipientId, message, channel]
+      properties:
+        recipientId:
+          type: string
+        recipientType:
+          type: string
+          enum: [patient, provider, admin]
+        message:
+          type: string
+        subject:
+          type: string
+        channel:
+          type: string
+          enum: [email, sms, push, in_app]
+        priority:
+          type: string
+          enum: [low, normal, high, urgent]
+          default: normal
+
+    NotificationPatch:
+      type: object
+      properties:
+        message:
+          type: string
+        subject:
+          type: string
+        priority:
+          type: string
+        status:
+          type: string
+
+    NotificationList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    # ── Device ──────────────────────────────────────────────────────────────────
+
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+        patientId:
+          type: string
+        deviceType:
+          type: string
+          enum: [glucose_monitor, blood_pressure_cuff, pulse_oximeter, thermometer, ECG, wearable, infusion_pump, ventilator]
+        manufacturer:
+          type: string
+        model:
+          type: string
+        serialNumber:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, maintenance, decommissioned]
+        registeredAt:
+          type: string
+          format: date-time
+        lastReadingAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    DeviceInput:
+      type: object
+      required: [deviceType, manufacturer, model]
+      properties:
+        patientId:
+          type: string
+        deviceType:
+          type: string
+          enum: [glucose_monitor, blood_pressure_cuff, pulse_oximeter, thermometer, ECG, wearable, infusion_pump, ventilator]
+        manufacturer:
+          type: string
+        model:
+          type: string
+        serialNumber:
+          type: string
+
+    DevicePatch:
+      type: object
+      properties:
+        patientId:
+          type: string
+        status:
+          type: string
+        model:
+          type: string
+        serialNumber:
+          type: string
+
+    DeviceReading:
+      type: object
+      properties:
+        id:
+          type: string
+        deviceId:
+          type: string
+        patientId:
+          type: string
+        metric:
+          type: string
+        value:
+          type: number
+        unit:
+          type: string
+        recordedAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+
+    DeviceReadingInput:
+      type: object
+      required: [metric, value, unit]
+      properties:
+        patientId:
+          type: string
+        metric:
+          type: string
+          description: The type of measurement (e.g., blood_glucose, systolic_bp)
+        value:
+          type: number
+        unit:
+          type: string
+        recordedAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+
+    DeviceReadingList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceReading'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    DeviceList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Device'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    # ── AI Agent ────────────────────────────────────────────────────────────────
+
+    AiAgent:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [diagnostic, triage, scheduling, billing, monitoring, research, administrative]
+        version:
+          type: string
+        status:
+          type: string
+          enum: [registered, deployed, active, retired, error]
+        capabilities:
+          type: array
+          items:
+            type: string
+        modelId:
+          type: string
+          description: Underlying AI model identifier
+        endpoint:
+          type: string
+          description: Agent invocation endpoint
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AiAgentInput:
+      type: object
+      required: [name, type]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [diagnostic, triage, scheduling, billing, monitoring, research, administrative]
+        version:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        modelId:
+          type: string
+        endpoint:
+          type: string
+
+    AiAgentPatch:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        version:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        endpoint:
+          type: string
+
+    AiAgentList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiAgent'
+        total:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+
+    # ── Shared sub-schemas ───────────────────────────────────────────────────────
+
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+          default: US
+
+    Vitals:
+      type: object
+      properties:
+        temperature:
+          type: number
+          description: Body temperature in Fahrenheit
+        heartRate:
+          type: integer
+          description: Heart rate in bpm
+        bloodPressureSystolic:
+          type: integer
+          description: Systolic blood pressure in mmHg
+        bloodPressureDiastolic:
+          type: integer
+          description: Diastolic blood pressure in mmHg
+        respiratoryRate:
+          type: integer
+          description: Respiratory rate in breaths per minute
+        oxygenSaturation:
+          type: number
+          description: Oxygen saturation percentage
+        weight:
+          type: number
+          description: Weight in kilograms
+        height:
+          type: number
+          description: Height in centimeters

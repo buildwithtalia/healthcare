@@ -1,0 +1,5 @@
+$kind: http-request
+name: Delete Prescription
+method: DELETE
+url: '{{baseUrl}}/api/pharmacy/{{rxId}}'
+order: 6000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: List EHR Records
+method: GET
+url: '{{baseUrl}}/api/ehr/'
+order: 1000

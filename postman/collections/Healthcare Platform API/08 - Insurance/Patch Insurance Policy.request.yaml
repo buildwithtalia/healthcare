@@ -1,0 +1,14 @@
+$kind: http-request
+name: Patch Insurance Policy
+method: PATCH
+url: '{{baseUrl}}/api/insurance/{{policyId}}'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "status": "terminated"
+    }

@@ -1,0 +1,5 @@
+workspace:
+  id: 67ddc429-4ddd-4df2-9b1e-9b215fe40cab
+cloudResources:
+  collections:
+    ../postman/collections/Healthcare Platform API: 48916573-5f44c18f-378a-435a-b557-a294358beb8f

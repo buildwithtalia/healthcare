@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Device Readings
+method: GET
+url: '{{baseUrl}}/api/devices/{{deviceId}}/readings'
+order: 7000

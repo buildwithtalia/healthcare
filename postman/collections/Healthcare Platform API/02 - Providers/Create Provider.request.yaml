@@ -1,0 +1,19 @@
+$kind: http-request
+name: Create Provider
+method: POST
+url: '{{baseUrl}}/api/providers/'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "first_name": "Sarah",
+      "last_name": "Kim",
+      "role": "physician",
+      "specialty": "Oncology",
+      "email": "s.kim@clinic.example",
+      "department": "Oncology"
+    }

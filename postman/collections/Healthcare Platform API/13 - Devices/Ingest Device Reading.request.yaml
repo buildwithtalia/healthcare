@@ -1,0 +1,16 @@
+$kind: http-request
+name: Ingest Device Reading
+method: POST
+url: '{{baseUrl}}/api/devices/{{deviceId}}/readings'
+order: 8000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "metric": "heart_rate",
+      "value": 75,
+      "unit": "bpm"
+    }

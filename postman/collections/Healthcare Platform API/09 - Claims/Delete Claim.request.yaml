@@ -1,0 +1,5 @@
+$kind: http-request
+name: Delete Claim
+method: DELETE
+url: '{{baseUrl}}/api/claims/{{claimId}}'
+order: 6000

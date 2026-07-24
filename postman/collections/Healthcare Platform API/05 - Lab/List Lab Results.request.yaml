@@ -1,0 +1,5 @@
+$kind: http-request
+name: List Lab Results
+method: GET
+url: '{{baseUrl}}/api/lab/'
+order: 1000

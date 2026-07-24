@@ -1,0 +1,5 @@
+$kind: http-request
+name: Search Patients
+method: GET
+url: '{{baseUrl}}/api/patients/search?q=ava'
+order: 8000

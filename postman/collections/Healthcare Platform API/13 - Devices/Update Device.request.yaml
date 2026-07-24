@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Device
+method: PUT
+url: '{{baseUrl}}/api/devices/{{deviceId}}'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "type": "wearable",
+      "model": "CardioBand X3",
+      "status": "active"
+    }

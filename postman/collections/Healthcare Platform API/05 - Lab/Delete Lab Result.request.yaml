@@ -1,0 +1,5 @@
+$kind: http-request
+name: Delete Lab Result
+method: DELETE
+url: '{{baseUrl}}/api/lab/{{labId}}'
+order: 6000

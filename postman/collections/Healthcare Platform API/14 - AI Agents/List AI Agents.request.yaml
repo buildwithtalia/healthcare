@@ -1,0 +1,5 @@
+$kind: http-request
+name: List AI Agents
+method: GET
+url: '{{baseUrl}}/api/ai-agents/'
+order: 1000
