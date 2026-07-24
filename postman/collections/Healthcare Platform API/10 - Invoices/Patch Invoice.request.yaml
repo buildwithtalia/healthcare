@@ -1,0 +1,14 @@
+$kind: http-request
+name: Patch Invoice
+method: PATCH
+url: '{{baseUrl}}/api/invoices/{{invoiceId}}'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "status": "paid"
+    }

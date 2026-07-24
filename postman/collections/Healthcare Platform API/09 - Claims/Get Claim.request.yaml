@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Claim
+method: GET
+url: '{{baseUrl}}/api/claims/{{claimId}}'
+order: 3000

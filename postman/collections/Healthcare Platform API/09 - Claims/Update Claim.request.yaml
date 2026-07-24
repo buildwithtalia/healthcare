@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Claim
+method: PUT
+url: '{{baseUrl}}/api/claims/{{claimId}}'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "insurance_id": 1000,
+      "amount_billed": 250.0,
+      "status": "submitted"
+    }

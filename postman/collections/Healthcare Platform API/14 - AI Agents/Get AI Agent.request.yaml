@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get AI Agent
+method: GET
+url: '{{baseUrl}}/api/ai-agents/{{agentId}}'
+order: 3000

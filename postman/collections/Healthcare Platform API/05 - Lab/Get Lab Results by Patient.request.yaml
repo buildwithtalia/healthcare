@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Lab Results by Patient
+method: GET
+url: '{{baseUrl}}/api/lab/patient/{{patientId}}'
+order: 7000

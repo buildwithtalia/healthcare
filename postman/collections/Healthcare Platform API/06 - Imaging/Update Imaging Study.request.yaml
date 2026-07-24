@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Imaging Study
+method: PUT
+url: '{{baseUrl}}/api/imaging/{{imagingId}}'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "modality": "CT",
+      "body_part": "Chest",
+      "status": "final"
+    }

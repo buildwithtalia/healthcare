@@ -1,0 +1,21 @@
+$kind: http-request
+name: Create Insurance Policy
+method: POST
+url: '{{baseUrl}}/api/insurance/'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "carrier": "UnitedHealth",
+      "plan": "PPO Silver",
+      "member_id": "UHC-12345",
+      "group_id": "GRP-9900",
+      "effective_date": "2026-01-01",
+      "copay": 30,
+      "deductible": 2000
+    }

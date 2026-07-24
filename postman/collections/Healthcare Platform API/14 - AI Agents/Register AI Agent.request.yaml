@@ -1,0 +1,18 @@
+$kind: http-request
+name: Register AI Agent
+method: POST
+url: '{{baseUrl}}/api/ai-agents/'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Symptom Checker",
+      "version": "1.0.0",
+      "purpose": "Checks patient symptoms and recommends next steps",
+      "owner": "AI Platform",
+      "capabilities": ["symptom_check", "triage"]
+    }

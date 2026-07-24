@@ -1,0 +1,17 @@
+$kind: http-request
+name: Register Device
+method: POST
+url: '{{baseUrl}}/api/devices/'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "type": "wearable",
+      "model": "CardioBand X3",
+      "serial": "CBX3-000999"
+    }

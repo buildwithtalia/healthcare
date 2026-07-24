@@ -1,0 +1,14 @@
+$kind: http-request
+name: Patch Prescription
+method: PATCH
+url: '{{baseUrl}}/api/pharmacy/{{rxId}}'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "status": "discontinued"
+    }

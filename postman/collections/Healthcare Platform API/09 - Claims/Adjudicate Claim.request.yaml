@@ -1,0 +1,15 @@
+$kind: http-request
+name: Adjudicate Claim
+method: POST
+url: '{{baseUrl}}/api/claims/{{claimId}}/adjudicate'
+order: 7000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "status": "adjudicated",
+      "amount_allowed": 200.0
+    }

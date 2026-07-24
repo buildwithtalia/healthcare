@@ -1,0 +1,15 @@
+$kind: http-request
+name: Invoke AI Agent
+method: POST
+url: '{{baseUrl}}/api/ai-agents/{{agentId}}/invoke'
+order: 9000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "input": "Patient reports chest pain and shortness of breath."
+    }

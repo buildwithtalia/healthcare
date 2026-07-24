@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Provider Schedule
+method: GET
+url: '{{baseUrl}}/api/providers/{{providerId}}/schedule'
+order: 7000

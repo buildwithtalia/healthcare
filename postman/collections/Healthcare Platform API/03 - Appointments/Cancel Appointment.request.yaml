@@ -1,0 +1,14 @@
+$kind: http-request
+name: Cancel Appointment
+method: POST
+url: '{{baseUrl}}/api/appointments/{{appointmentId}}/cancel'
+order: 7000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "reason": "Patient requested cancellation"
+    }

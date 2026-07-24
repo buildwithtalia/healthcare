@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Imaging Study
+method: GET
+url: '{{baseUrl}}/api/imaging/{{imagingId}}'
+order: 3000

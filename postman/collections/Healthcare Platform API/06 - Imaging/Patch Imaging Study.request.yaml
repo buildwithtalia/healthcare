@@ -1,0 +1,15 @@
+$kind: http-request
+name: Patch Imaging Study
+method: PATCH
+url: '{{baseUrl}}/api/imaging/{{imagingId}}'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "findings": "No acute findings.",
+      "status": "final"
+    }

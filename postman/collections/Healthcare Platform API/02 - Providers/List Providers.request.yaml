@@ -1,0 +1,5 @@
+$kind: http-request
+name: List Providers
+method: GET
+url: '{{baseUrl}}/api/providers/'
+order: 1000

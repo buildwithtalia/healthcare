@@ -1,0 +1,20 @@
+$kind: http-request
+name: Create EHR Record
+method: POST
+url: '{{baseUrl}}/api/ehr/'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "provider_id": 1000,
+      "visit_date": "2026-07-10T09:00:00Z",
+      "chief_complaint": "Chest pain",
+      "diagnosis": ["R07.9 - Chest pain, unspecified"],
+      "notes": "Patient reports intermittent chest pain.",
+      "vitals": {"bp": "130/85", "hr": 82, "temp_c": 36.9, "spo2": 97}
+    }

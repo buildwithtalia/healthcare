@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Device
+method: GET
+url: '{{baseUrl}}/api/devices/{{deviceId}}'
+order: 3000

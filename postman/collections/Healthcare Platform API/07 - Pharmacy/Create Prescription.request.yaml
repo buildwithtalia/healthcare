@@ -1,0 +1,21 @@
+$kind: http-request
+name: Create Prescription
+method: POST
+url: '{{baseUrl}}/api/pharmacy/'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "prescriber_id": 1000,
+      "drug": "Lisinopril",
+      "dose": "10 mg",
+      "route": "PO",
+      "frequency": "QD",
+      "quantity": 30,
+      "refills": 2
+    }

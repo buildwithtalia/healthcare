@@ -1,0 +1,5 @@
+$kind: http-request
+name: Delete Patient
+method: DELETE
+url: '{{baseUrl}}/api/patients/{{patientId}}'
+order: 6000

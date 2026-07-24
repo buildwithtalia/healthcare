@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get Abnormal Lab Results
+method: GET
+url: '{{baseUrl}}/api/lab/abnormal'
+order: 8000

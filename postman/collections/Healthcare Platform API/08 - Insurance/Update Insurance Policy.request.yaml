@@ -1,0 +1,17 @@
+$kind: http-request
+name: Update Insurance Policy
+method: PUT
+url: '{{baseUrl}}/api/insurance/{{policyId}}'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_id": 1000,
+      "carrier": "UnitedHealth",
+      "member_id": "UHC-12345",
+      "status": "active"
+    }

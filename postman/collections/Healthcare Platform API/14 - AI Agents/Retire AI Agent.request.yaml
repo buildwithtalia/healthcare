@@ -1,0 +1,5 @@
+$kind: http-request
+name: Retire AI Agent
+method: POST
+url: '{{baseUrl}}/api/ai-agents/{{agentId}}/retire'
+order: 8000

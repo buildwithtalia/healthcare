@@ -1,0 +1,5 @@
+$kind: http-request
+name: Delete Insurance Policy
+method: DELETE
+url: '{{baseUrl}}/api/insurance/{{policyId}}'
+order: 6000

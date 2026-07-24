@@ -1,0 +1,5 @@
+$kind: http-request
+name: List Insurance Policies
+method: GET
+url: '{{baseUrl}}/api/insurance/'
+order: 1000

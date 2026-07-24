@@ -1,0 +1,5 @@
+$kind: http-request
+name: Delete Imaging Study
+method: DELETE
+url: '{{baseUrl}}/api/imaging/{{imagingId}}'
+order: 6000

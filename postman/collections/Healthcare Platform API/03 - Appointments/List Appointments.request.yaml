@@ -1,0 +1,5 @@
+$kind: http-request
+name: List Appointments
+method: GET
+url: '{{baseUrl}}/api/appointments/'
+order: 1000

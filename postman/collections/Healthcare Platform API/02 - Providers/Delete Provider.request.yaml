@@ -1,0 +1,5 @@
+$kind: http-request
+name: Delete Provider
+method: DELETE
+url: '{{baseUrl}}/api/providers/{{providerId}}'
+order: 6000
