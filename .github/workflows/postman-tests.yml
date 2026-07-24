@@ -24,9 +24,24 @@ jobs:
 
       - name: Start Flask server
         run: |
-          python app.py &
-          echo "Waiting for server to start..."
-          sleep 3
+          python app.py > server.log 2>&1 &
+          SERVER_PID=$!
+          echo "Waiting for server to accept connections (pid=$SERVER_PID)..."
+          for i in $(seq 1 30); do
+            if ! kill -0 $SERVER_PID 2>/dev/null; then
+              echo "Flask server exited before it was ready. Logs:"
+              cat server.log
+              exit 1
+            fi
+            if curl -sf http://127.0.0.1:5000/api/health >/dev/null; then
+              echo "Server up."
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Timed out waiting for server. Logs:"
+          cat server.log
+          exit 1
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
