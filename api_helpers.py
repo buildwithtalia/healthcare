@@ -83,6 +83,13 @@ def make_crud_blueprint(
                 pass
         return jsonify(record), 201
 
+    @bp.get("/<int:record_id>")
+    def read_record(record_id):
+        record = store.get(record_id)
+        if not record:
+            return jsonify({"error": f"{kind} {record_id} not found"}), 404
+        return jsonify(record)
+
     @bp.put("/<int:record_id>")
     @bp.patch("/<int:record_id>")
     def update_record(record_id):
