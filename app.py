@@ -59,28 +59,18 @@ def create_app():
     def catalog():
         return jsonify(SERVICE_CATALOG)
 
+    _HEALTH_KEY_MAP = {
+        "ehr_records": "ehr",
+        "lab_results": "lab",
+        "imaging_studies": "imaging",
+        "insurance_policies": "insurance",
+    }
+
     @app.get("/api/health")
     def health():
-        return jsonify({
-            "status": "ok",
-            "counts": {
-                "patients": len(ds.patients),
-                "providers": len(ds.providers),
-                "appointments": len(ds.appointments),
-                "ehr": len(ds.ehr_records),
-                "lab": len(ds.lab_results),
-                "imaging": len(ds.imaging_studies),
-                "prescriptions": len(ds.prescriptions),
-                "insurance": len(ds.insurance_policies),
-                "claims": len(ds.claims),
-                "invoices": len(ds.invoices),
-                "payments": len(ds.payments),
-                "notifications": len(ds.notifications),
-                "devices": len(ds.devices),
-                "device_readings": len(ds.device_readings),
-                "ai_agents": len(ds.ai_agents),
-            },
-        })
+        raw = ds.all_counts()
+        counts = {_HEALTH_KEY_MAP.get(k, k): v for k, v in raw.items()}
+        return jsonify({"status": "ok", "counts": counts})
 
     @app.errorhandler(404)
     def not_found(e):

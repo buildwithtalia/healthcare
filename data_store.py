@@ -150,6 +150,20 @@ class PGTable:
                     raise KeyError(key)
 
 
+def all_counts() -> dict[str, int]:
+    """Return row counts for every domain table in a single round-trip."""
+    query = sql.SQL(" UNION ALL ").join(
+        sql.SQL("SELECT {name} AS name, count(*) AS n FROM {ident}").format(
+            name=sql.Literal(t), ident=sql.Identifier(t)
+        )
+        for t in TABLES
+    )
+    with pool.connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(query)
+            return {r["name"]: r["n"] for r in cur.fetchall()}
+
+
 patients          = PGTable("patients")
 providers         = PGTable("providers")
 appointments      = PGTable("appointments")
